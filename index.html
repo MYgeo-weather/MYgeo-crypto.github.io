@@ -3,337 +3,361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
-    <title>Крипто-портфель | Crypto Tracker</title>
+    <title>CryptoVault | Крипто-портфель</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Poppins', Roboto, sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #0d1f0d 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif;
+            background: #030303;
             min-height: 100vh;
-            padding: 12px;
+            padding: 0;
+            overflow-x: hidden;
         }
 
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: rgba(10, 15, 10, 0.75);
-            backdrop-filter: blur(10px);
-            border-radius: 32px;
-            overflow: hidden;
-            box-shadow: 0 8px 32px rgba(0, 255, 0, 0.1);
-            border: 1px solid rgba(0, 255, 0, 0.2);
+        /* Анимированный фон с сеткой */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        /* Табы */
-        .tabs {
+        .app {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
             display: flex;
-            background: rgba(0, 0, 0, 0.5);
-            gap: 2px;
+            flex-direction: column;
         }
 
-        .tab-btn {
-            flex: 1;
-            padding: 16px 8px;
-            border: none;
-            background: transparent;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            font-family: inherit;
-            color: #88ff88;
-            border-bottom: 2px solid transparent;
+        /* Хедер */
+        .header {
+            padding: 20px 20px 10px 20px;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        .tab-btn.active {
-            color: #00ff00;
-            border-bottom-color: #00ff00;
-            background: rgba(0, 255, 0, 0.1);
-            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        .logo {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            flex-wrap: wrap;
         }
 
-        .tab-content {
-            display: none;
-            padding: 20px 16px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .tab-content.active { display: block; }
-
-        /* Карточки */
-        .card {
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid rgba(0, 255, 0, 0.15);
-            transition: all 0.2s;
-        }
-
-        .card:hover {
-            border-color: rgba(0, 255, 0, 0.4);
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.1);
-        }
-
-        /* Цифры */
-        .total-value {
-            text-align: center;
-            font-size: 42px;
-            font-weight: bold;
-            background: linear-gradient(135deg, #00ff00, #00cc66);
+        .logo h1 {
+            font-size: 22px;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, #00ff00, #00aa44);
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            letter-spacing: -1px;
         }
 
-        .total-label {
-            text-align: center;
-            color: #66ff66;
-            font-size: 14px;
-            margin-top: 8px;
-            letter-spacing: 1px;
+        .logo .badge {
+            font-size: 10px;
+            color: #00aa44;
+            border: 1px solid #00aa44;
+            padding: 2px 8px;
+            border-radius: 20px;
         }
 
-        .profit-positive {
-            color: #00ff00;
-            text-shadow: 0 0 3px rgba(0, 255, 0, 0.3);
+        /* Навигация */
+        .nav-cards {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            overflow-x: auto;
+            padding-bottom: 8px;
         }
 
-        .profit-negative {
-            color: #ff4444;
+        .nav-card {
+            flex-shrink: 0;
+            background: rgba(0, 20, 0, 0.6);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            border-radius: 16px;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
         }
+
+        .nav-card.active {
+            border-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+        }
+
+        .nav-card .icon { font-size: 20px; }
+        .nav-card .label { font-size: 14px; font-weight: 500; color: #88ff88; }
+
+        /* Экраны */
+        .screen { display: none; padding: 20px; animation: slideUp 0.3s ease; }
+        .screen.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Карточки статистики */
+        .stats-panel { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; }
+        
+        .big-number {
+            background: linear-gradient(135deg, #001a00, #000a00);
+            border-radius: 32px;
+            padding: 28px 24px;
+            border: 1px solid rgba(0, 255, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        .big-number .label { font-size: 12px; text-transform: uppercase; letter-spacing: 3px; color: #338833; margin-bottom: 8px; }
+        .big-number .value { font-size: 48px; font-weight: bold; color: #00ff66; letter-spacing: -1px; }
+        .big-number .sub { font-size: 12px; color: #448844; margin-top: 8px; }
+
+        .metrics-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .metric-card {
+            background: rgba(0, 15, 0, 0.6);
+            border-radius: 20px;
+            padding: 16px;
+            border: 1px solid rgba(0, 255, 0, 0.1);
+        }
+        .metric-card .metric-label { font-size: 11px; text-transform: uppercase; color: #338833; letter-spacing: 1px; }
+        .metric-card .metric-value { font-size: 24px; font-weight: bold; color: #88ff88; margin-top: 8px; }
+        .profit-positive { color: #00ff44; }
+        .profit-negative { color: #ff5533; }
 
         /* Список монет */
-        .coin-item {
+        .coin-grid { display: flex; flex-direction: column; gap: 12px; }
+        .coin-tile {
+            background: linear-gradient(135deg, rgba(0, 20, 0, 0.7), rgba(0, 30, 0, 0.5));
+            border-radius: 20px;
+            padding: 16px;
+            border-left: 3px solid #00ff00;
+        }
+        .coin-header { display: flex; justify-content: space-between; margin-bottom: 12px; }
+        .coin-name { font-size: 18px; font-weight: bold; color: #ccffcc; }
+        .coin-symbol { font-size: 11px; color: #448844; margin-left: 6px; }
+        .coin-stats { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+        .coin-stat { flex: 1; min-width: 80px; }
+        .coin-stat-label { font-size: 10px; color: #338833; text-transform: uppercase; }
+        .coin-stat-value { font-size: 15px; font-weight: bold; color: #aaffaa; margin-top: 4px; }
+
+        /* Курсы валют */
+        .rates-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 12px;
+        }
+        .rate-card {
+            background: linear-gradient(135deg, rgba(0, 20, 0, 0.7), rgba(0, 30, 0, 0.5));
+            border-radius: 20px;
+            padding: 16px;
+            text-align: center;
+            border: 1px solid rgba(0, 255, 0, 0.2);
+        }
+        .rate-flag { font-size: 32px; margin-bottom: 8px; }
+        .rate-currency { font-size: 14px; color: #88ff88; font-weight: bold; }
+        .rate-value { font-size: 20px; color: #00ff66; margin-top: 8px; }
+        .rate-base { font-size: 10px; color: #448844; margin-top: 4px; }
+        .rate-update { font-size: 9px; color: #2a5a2a; margin-top: 8px; }
+
+        /* Форма в стиле терминала */
+        .terminal-form {
+            background: #0a0a0a;
+            border-radius: 24px;
+            border: 1px solid #1a3a1a;
+            overflow: hidden;
+        }
+        .terminal-header {
+            background: #0f1a0f;
+            padding: 12px 16px;
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid #1a3a1a;
+        }
+        .terminal-dot { width: 12px; height: 12px; border-radius: 50%; background: #ff5f56; }
+        .terminal-dot:nth-child(2) { background: #ffbd2e; }
+        .terminal-dot:nth-child(3) { background: #27c93f; }
+        .terminal-title { font-size: 11px; color: #448844; margin-left: 8px; }
+        .terminal-body { padding: 20px; }
+        .input-row { margin-bottom: 16px; }
+        .input-row label { display: block; font-size: 11px; color: #338833; margin-bottom: 6px; letter-spacing: 1px; }
+        .input-row input, .input-row select {
+            width: 100%;
+            padding: 14px;
+            background: #061206;
+            border: 1px solid #1a4a1a;
+            border-radius: 12px;
+            font-size: 15px;
+            color: #00ff66;
+            font-family: inherit;
+        }
+        .input-row input:focus, .input-row select:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 8px rgba(0, 255, 0, 0.2);
+        }
+        .btn-terminal {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #0a3a0a, #052005);
+            border: 1px solid #2a6a2a;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #00ff88;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-terminal:active { transform: scale(0.97); }
+
+        .setting-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 0;
-            border-bottom: 1px solid rgba(0, 255, 0, 0.1);
-        }
-
-        .coin-name {
-            font-weight: bold;
-            color: #ccffcc;
-            font-size: 16px;
-        }
-
-        .coin-symbol {
-            font-size: 11px;
-            color: #66ff66;
-            margin-left: 6px;
-        }
-
-        .coin-amount {
-            color: #aaffaa;
-            font-size: 13px;
-        }
-
-        .coin-price {
-            text-align: right;
-        }
-
-        .coin-current {
-            font-weight: bold;
-            color: #00ff66;
-        }
-
-        .coin-profit {
-            font-size: 12px;
-        }
-
-        /* Форма */
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            color: #88ff88;
-            font-size: 13px;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 14px;
-            background: rgba(0, 0, 0, 0.6);
-            border: 1px solid rgba(0, 255, 0, 0.3);
-            border-radius: 16px;
-            font-size: 16px;
-            color: #00ff66;
-            font-family: inherit;
-            transition: all 0.2s;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #00ff00;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
-        }
-
-        .form-group input::placeholder {
-            color: #338833;
-        }
-
-        /* Кнопки */
-        .btn {
-            width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #00aa00, #006600);
-            border: none;
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn:active { transform: scale(0.97); }
-        .btn-danger {
-            background: linear-gradient(135deg, #aa3300, #662200);
-        }
-
-        /* Статистика */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .stat-card {
-            background: rgba(0, 0, 0, 0.5);
-            border-radius: 16px;
-            padding: 14px;
-            text-align: center;
-            border: 1px solid rgba(0, 255, 0, 0.15);
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: bold;
-            color: #00ff66;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: #66aa66;
-            margin-top: 6px;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #448844;
-        }
-
-        .delete-btn {
-            background: none;
-            border: none;
-            color: #ff6644;
-            font-size: 20px;
-            cursor: pointer;
-            padding: 5px 10px;
-        }
-
-        .footer {
-            text-align: center;
             padding: 16px;
-            font-size: 11px;
-            color: #336633;
-            border-top: 1px solid rgba(0, 255, 0, 0.1);
+            background: rgba(0, 15, 0, 0.5);
+            border-radius: 16px;
+            margin-bottom: 12px;
         }
+        .setting-label { color: #88ff88; font-size: 15px; }
+        .setting-value select {
+            background: #061206;
+            border: 1px solid #1a4a1a;
+            border-radius: 12px;
+            padding: 10px 16px;
+            color: #00ff66;
+            font-size: 14px;
+        }
+
+        .empty-terminal { text-align: center; padding: 40px; color: #2a6a2a; }
+        .footer { text-align: center; padding: 20px; font-size: 10px; color: #1a4a1a; border-top: 1px solid rgba(0, 255, 0, 0.1); margin-top: 20px; }
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="tabs">
-        <button class="tab-btn active" data-tab="dashboard">📊 Дашборд</button>
-        <button class="tab-btn" data-tab="portfolio">💰 Портфель</button>
-        <button class="tab-btn" data-tab="add">➕ Добавить</button>
-    </div>
-
-    <!-- Вкладка: Дашборд -->
-    <div id="tab-dashboard" class="tab-content active">
-        <div class="card">
-            <div class="total-value" id="totalValue">$0</div>
-            <div class="total-label">ОБЩАЯ СТОИМОСТЬ</div>
+<div class="app">
+    <div class="header">
+        <div class="logo">
+            <h1>✦ CRYPTOVAULT ✦</h1>
+            <span class="badge">terminal v2.0</span>
         </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="totalProfit">$0</div>
-                <div class="stat-label">ПРИБЫЛЬ/УБЫТОК</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="profitPercent">0%</div>
-                <div class="stat-label">ПРОЦЕНТ</div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div style="font-size: 14px; color: #66ff66; margin-bottom: 12px;">📈 РАСПРЕДЕЛЕНИЕ</div>
-            <div id="distributionList"></div>
+        <div class="nav-cards">
+            <div class="nav-card active" data-screen="dashboard"><span class="icon">📡</span><span class="label">РАДАР</span></div>
+            <div class="nav-card" data-screen="portfolio"><span class="icon">🗄️</span><span class="label">ХРАНИЛИЩЕ</span></div>
+            <div class="nav-card" data-screen="rates"><span class="icon">💱</span><span class="label">КУРСЫ</span></div>
+            <div class="nav-card" data-screen="add"><span class="icon">⚡</span><span class="label">ВВОД</span></div>
+            <div class="nav-card" data-screen="settings"><span class="icon">⚙️</span><span class="label">НАСТРОЙКИ</span></div>
         </div>
     </div>
 
-    <!-- Вкладка: Портфель -->
-    <div id="tab-portfolio" class="tab-content">
-        <div id="portfolioList"></div>
-        <button class="btn btn-danger" onclick="clearAllData()" style="margin-top: 10px;">🗑 Очистить всё</button>
+    <!-- ЭКРАН: РАДАР (дашборд) -->
+    <div id="screen-dashboard" class="screen active">
+        <div class="stats-panel">
+            <div class="big-number">
+                <div class="label">TOTAL VALUE</div>
+                <div class="value" id="totalValue">$0.00</div>
+                <div class="sub">в реальном времени</div>
+            </div>
+            <div class="metrics-row">
+                <div class="metric-card"><div class="metric-label">P&amp;L</div><div class="metric-value" id="totalProfit">$0</div></div>
+                <div class="metric-card"><div class="metric-label">PROFIT %</div><div class="metric-value" id="profitPercent">0%</div></div>
+            </div>
+        </div>
+        <div><div style="font-size: 11px; color: #338833; margin-bottom: 12px;">⚡ РАСПРЕДЕЛЕНИЕ АКТИВОВ</div><div id="distributionList" class="coin-grid"></div></div>
     </div>
 
-    <!-- Вкладка: Добавить монету -->
-    <div id="tab-add" class="tab-content">
-        <div class="card">
-            <h3 style="color: #00ff66; margin-bottom: 20px;">➕ Добавить покупку</h3>
-            <div class="form-group">
-                <label>🪙 Монета</label>
-                <select id="coinSelect">
-                    <option value="bitcoin">Bitcoin (BTC)</option>
-                    <option value="ethereum">Ethereum (ETH)</option>
-                    <option value="solana">Solana (SOL)</option>
-                    <option value="cardano">Cardano (ADA)</option>
-                    <option value="ripple">Ripple (XRP)</option>
-                    <option value="dogecoin">Dogecoin (DOGE)</option>
-                    <option value="polkadot">Polkadot (DOT)</option>
-                    <option value="litecoin">Litecoin (LTC)</option>
-                </select>
+    <!-- ЭКРАН: ХРАНИЛИЩЕ (портфель) -->
+    <div id="screen-portfolio" class="screen">
+        <div id="portfolioList" class="coin-grid"></div>
+        <button class="btn-terminal" onclick="clearAllData()" style="margin-top: 16px; background: linear-gradient(135deg, #3a0a0a, #2a0505); border-color: #6a2a2a; color: #ff8866;">🗑 ОЧИСТИТЬ ВСЁ</button>
+    </div>
+
+    <!-- ЭКРАН: КУРСЫ ВАЛЮТ -->
+    <div id="screen-rates" class="screen">
+        <div class="terminal-form">
+            <div class="terminal-header">
+                <div class="terminal-dot"></div>
+                <div class="terminal-dot"></div>
+                <div class="terminal-dot"></div>
+                <span class="terminal-title">>_ exchange_rates.sh</span>
             </div>
-            <div class="form-group">
-                <label>📊 Количество</label>
-                <input type="number" id="coinAmount" placeholder="0.00" step="any">
+            <div class="terminal-body">
+                <div class="rates-grid" id="ratesList">
+                    <div class="empty-terminal">⏳ Загрузка курсов...</div>
+                </div>
+                <div class="rate-update" style="text-align: center; margin-top: 16px; font-size: 10px; color: #2a6a2a;" id="ratesTimestamp"></div>
             </div>
-            <div class="form-group">
-                <label>💵 Цена покупки (USD)</label>
-                <input type="number" id="buyPrice" placeholder="0.00" step="any">
-            </div>
-            <button class="btn" onclick="addTransaction()">💾 Сохранить</button>
         </div>
     </div>
 
-    <div class="footer">⚡ Крипто-портфель | Данные в реальном времени</div>
+    <!-- ЭКРАН: ВВОД (добавление) -->
+    <div id="screen-add" class="screen">
+        <div class="terminal-form">
+            <div class="terminal-header"><div class="terminal-dot"></div><div class="terminal-dot"></div><div class="terminal-dot"></div><span class="terminal-title">>_ new_transaction.sh</span></div>
+            <div class="terminal-body">
+                <div class="input-row"><label>🪙 ASSET</label><select id="coinSelect">
+                    <option value="bitcoin">Bitcoin (BTC)</option><option value="ethereum">Ethereum (ETH)</option>
+                    <option value="solana">Solana (SOL)</option><option value="cardano">Cardano (ADA)</option>
+                    <option value="ripple">Ripple (XRP)</option><option value="dogecoin">Dogecoin (DOGE)</option>
+                    <option value="polkadot">Polkadot (DOT)</option><option value="litecoin">Litecoin (LTC)</option>
+                </select></div>
+                <div class="input-row"><label>📊 QUANTITY</label><input type="number" id="coinAmount" placeholder="0.00" step="any"></div>
+                <div class="input-row"><label>💵 BUY PRICE (USD)</label><input type="number" id="buyPrice" placeholder="0.00" step="any"></div>
+                <button class="btn-terminal" onclick="addTransaction()">▶ ВЫПОЛНИТЬ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ЭКРАН: НАСТРОЙКИ -->
+    <div id="screen-settings" class="screen">
+        <div class="terminal-form">
+            <div class="terminal-header"><div class="terminal-dot"></div><div class="terminal-dot"></div><div class="terminal-dot"></div><span class="terminal-title">>_ settings.conf</span></div>
+            <div class="terminal-body">
+                <div class="setting-item">
+                    <span class="setting-label">💱 Валюта отображения</span>
+                    <div class="setting-value"><select id="currencySelect">
+                        <option value="USD">🇺🇸 Доллар (USD)</option>
+                        <option value="EUR">🇪🇺 Евро (EUR)</option>
+                        <option value="RUB">🇷🇺 Рубль (RUB)</option>
+                        <option value="GBP">🇬🇧 Фунт (GBP)</option>
+                        <option value="CNY">🇨🇳 Юань (CNY)</option>
+                    </select></div>
+                </div>
+                <div class="setting-item">
+                    <span class="setting-label">🔄 Автообновление курсов</span>
+                    <div class="setting-value"><select id="refreshSelect">
+                        <option value="30" selected>Каждые 30 секунд</option>
+                        <option value="60">Каждую минуту</option>
+                        <option value="120">Каждые 2 минуты</option>
+                    </select></div>
+                </div>
+                <button class="btn-terminal" onclick="saveSettings()">💾 СОХРАНИТЬ</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">⚡ CRYPTOVAULT · курсы валют: CoinGecko</div>
 </div>
 
 <script>
     // ========== КРИПТО-ПОРТФЕЛЬ ==========
     
-    // Список поддерживаемых монет с названиями для API
     const coins = {
         bitcoin: { name: 'Bitcoin', symbol: 'BTC' },
         ethereum: { name: 'Ethereum', symbol: 'ETH' },
@@ -345,110 +369,133 @@
         litecoin: { name: 'Litecoin', symbol: 'LTC' }
     };
     
-    // Транзакции (покупки)
+    // Курсы валют (будут обновляться из API)
+    let exchangeRates = { USD: 1, EUR: 0.92, RUB: 88.5, GBP: 0.79, CNY: 7.25 };
+    let lastRatesUpdate = null;
+    
     let transactions = [];
-    
-    // Текущие цены (кэш)
     let currentPrices = {};
+    let settings = { currency: 'USD', refreshInterval: 30 };
+    let refreshTimer = null;
     
-    // Загрузка данных из localStorage
+    // Загрузка данных
     function loadData() {
         const saved = localStorage.getItem('crypto_transactions');
-        if (saved) {
-            transactions = JSON.parse(saved);
-        }
+        if (saved) transactions = JSON.parse(saved);
+        
+        const savedSettings = localStorage.getItem('crypto_settings');
+        if (savedSettings) settings = JSON.parse(savedSettings);
+        
+        document.getElementById('currencySelect').value = settings.currency;
+        document.getElementById('refreshSelect').value = settings.refreshInterval;
+        
         loadPrices();
+        loadExchangeRates();
+        startAutoRefresh();
     }
     
-    // Сохранение в localStorage
-    function saveData() {
-        localStorage.setItem('crypto_transactions', JSON.stringify(transactions));
+    function saveSettings() {
+        settings.currency = document.getElementById('currencySelect').value;
+        settings.refreshInterval = parseInt(document.getElementById('refreshSelect').value);
+        localStorage.setItem('crypto_settings', JSON.stringify(settings));
+        startAutoRefresh();
         updateDashboard();
         renderPortfolio();
     }
     
-    // Загрузка текущих цен через CoinGecko API
+    function startAutoRefresh() {
+        if (refreshTimer) clearInterval(refreshTimer);
+        refreshTimer = setInterval(() => {
+            loadPrices();
+            loadExchangeRates();
+        }, settings.refreshInterval * 1000);
+    }
+    
+    // Загрузка курсов валют через CoinGecko
+    async function loadExchangeRates() {
+        try {
+            const response = await fetch('https://api.coingecko.com/api/v3/exchange_rates');
+            const data = await response.json();
+            if (data && data.rates) {
+                exchangeRates = {
+                    USD: 1,
+                    EUR: data.rates.eur?.value || 0.92,
+                    RUB: data.rates.rub?.value || 88.5,
+                    GBP: data.rates.gbp?.value || 0.79,
+                    CNY: data.rates.cny?.value || 7.25
+                };
+                lastRatesUpdate = new Date();
+                renderRates();
+                updateDashboard();
+                renderPortfolio();
+            }
+        } catch (error) {
+            console.error('Ошибка загрузки курсов:', error);
+            renderRates();
+        }
+    }
+    
+    function renderRates() {
+        const container = document.getElementById('ratesList');
+        const rates = [
+            { code: 'USD', flag: '🇺🇸', name: 'Доллар', rate: exchangeRates.USD },
+            { code: 'EUR', flag: '🇪🇺', name: 'Евро', rate: exchangeRates.EUR },
+            { code: 'RUB', flag: '🇷🇺', name: 'Рубль', rate: exchangeRates.RUB },
+            { code: 'GBP', flag: '🇬🇧', name: 'Фунт', rate: exchangeRates.GBP },
+            { code: 'CNY', flag: '🇨🇳', name: 'Юань', rate: exchangeRates.CNY }
+        ];
+        
+        container.innerHTML = rates.map(r => `
+            <div class="rate-card">
+                <div class="rate-flag">${r.flag}</div>
+                <div class="rate-currency">${r.code} · ${r.name}</div>
+                <div class="rate-value">1 USD = ${r.rate.toFixed(4)} ${r.code}</div>
+                <div class="rate-base">1 ${r.code} = ${(1 / r.rate).toFixed(4)} USD</div>
+            </div>
+        `).join('');
+        
+        if (lastRatesUpdate) {
+            document.getElementById('ratesTimestamp').innerHTML = `🕐 Обновлено: ${lastRatesUpdate.toLocaleTimeString()}`;
+        }
+    }
+    
+    function convertCurrency(value) {
+        const rate = exchangeRates[settings.currency] || 1;
+        return value * rate;
+    }
+    
+    function formatCurrency(value) {
+        const symbols = { USD: '$', EUR: '€', RUB: '₽', GBP: '£', CNY: '¥' };
+        const symbol = symbols[settings.currency] || '$';
+        const converted = convertCurrency(value);
+        return `${symbol}${converted.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    
     async function loadPrices() {
         const coinIds = Object.keys(coins).join(',');
         const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds}&vs_currencies=usd`;
-        
         try {
             const response = await fetch(url);
             const data = await response.json();
             currentPrices = data;
         } catch (error) {
-            console.error('Ошибка загрузки цен:', error);
-            // Если API не работает, используем тестовые цены
-            for (const [id, info] of Object.entries(coins)) {
+            for (const [id] of Object.entries(coins)) {
                 currentPrices[id] = { usd: 50000 };
             }
         }
-        
         updateDashboard();
         renderPortfolio();
     }
     
-    // Получить текущую цену монеты
-    function getCurrentPrice(coinId) {
-        if (currentPrices[coinId] && currentPrices[coinId].usd) {
-            return currentPrices[coinId].usd;
-        }
-        return 0;
-    }
+    function getCurrentPrice(coinId) { return currentPrices[coinId]?.usd || 0; }
     
-    // Расчёт общей стоимости портфеля
-    function calculateTotalValue() {
-        let total = 0;
-        for (const tx of transactions) {
-            const currentPrice = getCurrentPrice(tx.coin);
-            total += tx.amount * currentPrice;
-        }
-        return total;
-    }
-    
-    // Расчёт общей прибыли/убытка
-    function calculateTotalProfit() {
-        let totalSpent = 0;
-        let totalCurrent = 0;
-        
-        for (const tx of transactions) {
-            totalSpent += tx.amount * tx.buyPrice;
-            totalCurrent += tx.amount * getCurrentPrice(tx.coin);
-        }
-        
-        return totalCurrent - totalSpent;
-    }
-    
-    // Расчёт процента прибыли
-    function calculateProfitPercent() {
-        let totalSpent = 0;
-        let totalCurrent = 0;
-        
-        for (const tx of transactions) {
-            totalSpent += tx.amount * tx.buyPrice;
-            totalCurrent += tx.amount * getCurrentPrice(tx.coin);
-        }
-        
-        if (totalSpent === 0) return 0;
-        return ((totalCurrent - totalSpent) / totalSpent) * 100;
-    }
-    
-    // Получить портфель по монетам (агрегация)
     function getPortfolioByCoin() {
         const portfolio = {};
-        
         for (const tx of transactions) {
-            if (!portfolio[tx.coin]) {
-                portfolio[tx.coin] = {
-                    amount: 0,
-                    totalSpent: 0
-                };
-            }
+            if (!portfolio[tx.coin]) portfolio[tx.coin] = { amount: 0, totalSpent: 0 };
             portfolio[tx.coin].amount += tx.amount;
             portfolio[tx.coin].totalSpent += tx.amount * tx.buyPrice;
         }
-        
-        // Добавляем среднюю цену и текущую стоимость
         for (const [coin, data] of Object.entries(portfolio)) {
             data.avgPrice = data.totalSpent / data.amount;
             data.currentPrice = getCurrentPrice(coin);
@@ -456,173 +503,116 @@
             data.profit = data.currentValue - data.totalSpent;
             data.profitPercent = ((data.currentPrice - data.avgPrice) / data.avgPrice) * 100;
         }
-        
         return portfolio;
     }
     
-    // Обновление дашборда
+    function calculateTotalValue() {
+        let total = 0;
+        for (const tx of transactions) total += tx.amount * getCurrentPrice(tx.coin);
+        return total;
+    }
+    
+    function calculateTotalProfit() {
+        let spent = 0, current = 0;
+        for (const tx of transactions) {
+            spent += tx.amount * tx.buyPrice;
+            current += tx.amount * getCurrentPrice(tx.coin);
+        }
+        return current - spent;
+    }
+    
+    function calculateProfitPercent() {
+        let spent = 0, current = 0;
+        for (const tx of transactions) {
+            spent += tx.amount * tx.buyPrice;
+            current += tx.amount * getCurrentPrice(tx.coin);
+        }
+        if (spent === 0) return 0;
+        return ((current - spent) / spent) * 100;
+    }
+    
     function updateDashboard() {
         const totalValue = calculateTotalValue();
         const totalProfit = calculateTotalProfit();
         const profitPercent = calculateProfitPercent();
         
-        document.getElementById('totalValue').textContent = `$${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        document.getElementById('totalValue').innerHTML = formatCurrency(totalValue);
         
-        const profitElement = document.getElementById('totalProfit');
-        profitElement.textContent = `${totalProfit >= 0 ? '+' : ''}$${totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        profitElement.className = totalProfit >= 0 ? 'stat-value profit-positive' : 'stat-value profit-negative';
+        const profitEl = document.getElementById('totalProfit');
+        profitEl.innerHTML = `${totalProfit >= 0 ? '+' : ''}${formatCurrency(Math.abs(totalProfit))}`;
+        profitEl.className = `metric-value ${totalProfit >= 0 ? 'profit-positive' : 'profit-negative'}`;
         
-        const percentElement = document.getElementById('profitPercent');
-        percentElement.textContent = `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`;
-        percentElement.className = profitPercent >= 0 ? 'profit-positive' : 'profit-negative';
+        const percentEl = document.getElementById('profitPercent');
+        percentEl.innerHTML = `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`;
+        percentEl.className = `metric-value ${profitPercent >= 0 ? 'profit-positive' : 'profit-negative'}`;
         
-        // Распределение портфеля
         const portfolio = getPortfolioByCoin();
         const distributionDiv = document.getElementById('distributionList');
+        const total = totalValue;
         
         if (Object.keys(portfolio).length === 0) {
-            distributionDiv.innerHTML = '<div class="empty-state">Нет монет в портфеле</div>';
+            distributionDiv.innerHTML = '<div class="empty-terminal">⛔ нет активов</div>';
             return;
         }
         
-        // Сортируем по стоимости
-        const sorted = Object.entries(portfolio).sort((a, b) => b[1].currentValue - a[1].currentValue);
-        const total = totalValue;
-        
-        distributionDiv.innerHTML = sorted.map(([coinId, data]) => {
+        distributionDiv.innerHTML = Object.entries(portfolio).map(([coinId, data]) => {
             const percent = (data.currentValue / total) * 100;
             const coin = coins[coinId];
-            return `
-                <div style="margin-bottom: 12px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
-                        <span style="color: #ccffcc;">${coin?.name || coinId}</span>
-                        <span style="color: #00ff66;">${percent.toFixed(1)}%</span>
-                    </div>
-                    <div style="background: rgba(0, 50, 0, 0.5); border-radius: 10px; overflow: hidden;">
-                        <div style="width: ${percent}%; height: 6px; background: linear-gradient(90deg, #00ff00, #00cc66);"></div>
-                    </div>
-                </div>
-            `;
+            return `<div class="coin-tile"><div class="coin-header"><span class="coin-name">${coin?.name || coinId}</span><span class="coin-symbol">${percent.toFixed(1)}%</span></div>
+                <div style="background: #0a1f0a; border-radius: 8px; overflow: hidden; margin-top: 8px;"><div style="width: ${percent}%; height: 4px; background: #00ff44;"></div></div></div>`;
         }).join('');
     }
     
-    // Отображение списка портфеля (все транзакции)
     function renderPortfolio() {
         const container = document.getElementById('portfolioList');
-        
-        if (transactions.length === 0) {
-            container.innerHTML = '<div class="empty-state">✨ Пока нет монет. Добавьте первую покупку!</div>';
-            return;
-        }
-        
-        // Группируем по монетам для отображения
         const portfolio = getPortfolioByCoin();
+        if (Object.keys(portfolio).length === 0) { container.innerHTML = '<div class="empty-terminal">🏦 хранилище пусто</div>'; return; }
         
         container.innerHTML = Object.entries(portfolio).map(([coinId, data]) => {
             const coin = coins[coinId];
             const profitClass = data.profit >= 0 ? 'profit-positive' : 'profit-negative';
             const profitSign = data.profit >= 0 ? '+' : '';
-            
-            return `
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <span class="coin-name">${coin?.name || coinId}</span>
-                            <span class="coin-symbol">${coin?.symbol || coinId.toUpperCase()}</span>
-                        </div>
-                        <div class="coin-price">
-                            <div class="coin-current">$${data.currentPrice.toLocaleString()}</div>
-                        </div>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 12px;">
-                        <div>
-                            <div style="font-size: 12px; color: #66aa66;">Количество</div>
-                            <div class="coin-amount">${data.amount.toFixed(6)}</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 12px; color: #66aa66;">Средняя цена</div>
-                            <div>$${data.avgPrice.toLocaleString()}</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 12px; color: #66aa66;">Стоимость</div>
-                            <div>$${data.currentValue.toLocaleString()}</div>
-                        </div>
-                        <div>
-                            <div style="font-size: 12px; color: #66aa66;">P&amp;L</div>
-                            <div class="${profitClass}">${profitSign}$${data.profit.toLocaleString()} (${data.profitPercent >= 0 ? '+' : ''}${data.profitPercent.toFixed(2)}%)</div>
-                        </div>
-                    </div>
-                </div>
-            `;
+            return `<div class="coin-tile"><div class="coin-header"><span class="coin-name">${coin?.name || coinId}</span><span class="coin-symbol">${coin?.symbol}</span></div>
+                <div class="coin-stats"><div class="coin-stat"><div class="coin-stat-label">HOLD</div><div class="coin-stat-value">${data.amount.toFixed(6)}</div></div>
+                <div class="coin-stat"><div class="coin-stat-label">AVG</div><div class="coin-stat-value">${formatCurrency(data.avgPrice)}</div></div>
+                <div class="coin-stat"><div class="coin-stat-label">NOW</div><div class="coin-stat-value">${formatCurrency(data.currentPrice)}</div></div>
+                <div class="coin-stat"><div class="coin-stat-label">P&amp;L</div><div class="coin-stat-value ${profitClass}">${profitSign}${formatCurrency(Math.abs(data.profit))}</div></div></div></div>`;
         }).join('');
     }
     
-    // Добавление транзакции
     function addTransaction() {
         const coin = document.getElementById('coinSelect').value;
         const amount = parseFloat(document.getElementById('coinAmount').value);
         const buyPrice = parseFloat(document.getElementById('buyPrice').value);
+        if (isNaN(amount) || amount <= 0) { alert('Количество > 0'); return; }
+        if (isNaN(buyPrice) || buyPrice <= 0) { alert('Цена > 0'); return; }
         
-        if (isNaN(amount) || amount <= 0) {
-            alert('Введите корректное количество');
-            return;
-        }
-        
-        if (isNaN(buyPrice) || buyPrice <= 0) {
-            alert('Введите корректную цену');
-            return;
-        }
-        
-        transactions.push({
-            id: Date.now(),
-            coin: coin,
-            amount: amount,
-            buyPrice: buyPrice,
-            date: new Date().toISOString()
-        });
-        
-        saveData();
-        
-        // Очищаем поля
+        transactions.push({ id: Date.now(), coin, amount, buyPrice, date: new Date().toISOString() });
+        localStorage.setItem('crypto_transactions', JSON.stringify(transactions));
+        updateDashboard();
+        renderPortfolio();
         document.getElementById('coinAmount').value = '';
         document.getElementById('buyPrice').value = '';
-        
-        // Переключаемся на дашборд
-        document.querySelector('.tab-btn[data-tab="dashboard"]').click();
+        document.querySelector('.nav-card[data-screen="dashboard"]').click();
     }
     
-    // Очистка всех данных
     function clearAllData() {
-        if (confirm('⚠️ Вы уверены? Все данные будут удалены навсегда!')) {
-            transactions = [];
-            saveData();
-        }
+        if (confirm('⚠️ Удалить все данные?')) { transactions = []; localStorage.setItem('crypto_transactions', JSON.stringify(transactions)); updateDashboard(); renderPortfolio(); }
     }
     
-    // Переключение вкладок
-    function switchTab(tabName, event) {
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        if (event && event.target) event.target.classList.add('active');
-        
-        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-        document.getElementById(`tab-${tabName}`).classList.add('active');
-        
-        if (tabName === 'portfolio') renderPortfolio();
-        if (tabName === 'dashboard') updateDashboard();
+    function switchScreen(screenName) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(`screen-${screenName}`).classList.add('active');
+        document.querySelectorAll('.nav-card').forEach(c => c.classList.remove('active'));
+        document.querySelector(`.nav-card[data-screen="${screenName}"]`).classList.add('active');
+        if (screenName === 'portfolio') renderPortfolio();
+        if (screenName === 'dashboard') updateDashboard();
+        if (screenName === 'rates') renderRates();
     }
     
-    // Привязка обработчиков к кнопкам вкладок
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => switchTab(btn.dataset.tab, e));
-    });
+    document.querySelectorAll('.nav-card').forEach(card => { card.addEventListener('click', () => switchScreen(card.dataset.screen)); });
     
-    // Загрузка при старте
     loadData();
-    
-    // Обновление цен каждые 30 секунд
-    setInterval(() => {
-        loadPrices();
-    }, 30000);
 </script>
 </body>
 </html>
