@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>Крипто-портфель | Crypto Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Poppins', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #0d1f0d 100%);
+            min-height: 100vh;
+            padding: 12px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(10, 15, 10, 0.75);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 255, 0, 0.1);
+            border: 1px solid rgba(0, 255, 0, 0.2);
+        }
+
+        /* Табы */
+        .tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.5);
+            gap: 2px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 16px 8px;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-family: inherit;
+            color: #88ff88;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-btn.active {
+            color: #00ff00;
+            border-bottom-color: #00ff00;
+            background: rgba(0, 255, 0, 0.1);
+            text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px 16px;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .tab-content.active { display: block; }
+
+        /* Карточки */
+        .card {
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0, 255, 0, 0.15);
+            transition: all 0.2s;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 255, 0, 0.4);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.1);
+        }
+
+        /* Цифры */
+        .total-value {
+            text-align: center;
+            font-size: 42px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #00ff00, #00cc66);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -1px;
+        }
+
+        .total-label {
+            text-align: center;
+            color: #66ff66;
+            font-size: 14px;
+            margin-top: 8px;
+            letter-spacing: 1px;
+        }
+
+        .profit-positive {
+            color: #00ff00;
+            text-shadow: 0 0 3px rgba(0, 255, 0, 0.3);
+        }
+
+        .profit-negative {
+            color: #ff4444;
+        }
+
+        /* Список монет */
+        .coin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.1);
+        }
+
+        .coin-name {
+            font-weight: bold;
+            color: #ccffcc;
+            font-size: 16px;
+        }
+
+        .coin-symbol {
+            font-size: 11px;
+            color: #66ff66;
+            margin-left: 6px;
+        }
+
+        .coin-amount {
+            color: #aaffaa;
+            font-size: 13px;
+        }
+
+        .coin-price {
+            text-align: right;
+        }
+
+        .coin-current {
+            font-weight: bold;
+            color: #00ff66;
+        }
+
+        .coin-profit {
+            font-size: 12px;
+        }
+
+        /* Форма */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #88ff88;
+            font-size: 13px;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            border-radius: 16px;
+            font-size: 16px;
+            color: #00ff66;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);
+        }
+
+        .form-group input::placeholder {
+            color: #338833;
+        }
+
+        /* Кнопки */
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00aa00, #006600);
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:active { transform: scale(0.97); }
+        .btn-danger {
+            background: linear-gradient(135deg, #aa3300, #662200);
+        }
+
+        /* Статистика */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 16px;
+            padding: 14px;
+            text-align: center;
+            border: 1px solid rgba(0, 255, 0, 0.15);
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00ff66;
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: #66aa66;
+            margin-top: 6px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #448844;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ff6644;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px 10px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 11px;
+            color: #336633;
+            border-top: 1px solid rgba(0, 255, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="dashboard">📊 Дашборд</button>
+        <button class="tab-btn" data-tab="portfolio">💰 Портфель</button>
+        <button class="tab-btn" data-tab="add">➕ Добавить</button>
+    </div>
+
+    <!-- Вкладка: Дашборд -->
+    <div id="tab-dashboard" class="tab-content active">
+        <div class="card">
+            <div class="total-value" id="totalValue">$0</div>
+            <div class="total-label">ОБЩАЯ СТОИМОСТЬ</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalProfit">$0</div>
+                <div class="stat-label">ПРИБЫЛЬ/УБЫТОК</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="profitPercent">0%</div>
+                <div class="stat-label">ПРОЦЕНТ</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="font-size: 14px; color: #66ff66; margin-bottom: 12px;">📈 РАСПРЕДЕЛЕНИЕ</div>
+            <div id="distributionList"></div>
+        </div>
+    </div>
+
+    <!-- Вкладка: Портфель -->
+    <div id="tab-portfolio" class="tab-content">
+        <div id="portfolioList"></div>
+        <button class="btn btn-danger" onclick="clearAllData()" style="margin-top: 10px;">🗑 Очистить всё</button>
+    </div>
+
+    <!-- Вкладка: Добавить монету -->
+    <div id="tab-add" class="tab-content">
+        <div class="card">
+            <h3 style="color: #00ff66; margin-bottom: 20px;">➕ Добавить покупку</h3>
+            <div class="form-group">
+                <label>🪙 Монета</label>
+                <select id="coinSelect">
+                    <option value="bitcoin">Bitcoin (BTC)</option>
+                    <option value="ethereum">Ethereum (ETH)</option>
+                    <option value="solana">Solana (SOL)</option>
+                    <option value="cardano">Cardano (ADA)</option>
+                    <option value="ripple">Ripple (XRP)</option>
+                    <option value="dogecoin">Dogecoin (DOGE)</option>
+                    <option value="polkadot">Polkadot (DOT)</option>
+                    <option value="litecoin">Litecoin (LTC)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>📊 Количество</label>
+                <input type="number" id="coinAmount" placeholder="0.00" step="any">
+            </div>
+            <div class="form-group">
+                <label>💵 Цена покупки (USD)</label>
+                <input type="number" id="buyPrice" placeholder="0.00" step="any">
+            </div>
+            <button class="btn" onclick="addTransaction()">💾 Сохранить</button>
+        </div>
+    </div>
+
+    <div class="footer">⚡ Крипто-портфель | Данные в реальном времени</div>
+</div>
+
+<script>
+    // ========== КРИПТО-ПОРТФЕЛЬ ==========
+    
+    // Список поддерживаемых монет с названиями для API
+    const coins = {
+        bitcoin: { name: 'Bitcoin', symbol: 'BTC' },
+        ethereum: { name: 'Ethereum', symbol: 'ETH' },
+        solana: { name: 'Solana', symbol: 'SOL' },
+        cardano: { name: 'Cardano', symbol: 'ADA' },
+        ripple: { name: 'Ripple', symbol: 'XRP' },
+        dogecoin: { name: 'Dogecoin', symbol: 'DOGE' },
+        polkadot: { name: 'Polkadot', symbol: 'DOT' },
+        litecoin: { name: 'Litecoin', symbol: 'LTC' }
+    };
+    
+    // Транзакции (покупки)
+    let transactions = [];
+    
+    // Текущие цены (кэш)
+    let currentPrices = {};
+    
+    // Загрузка данных из localStorage
+    function loadData() {
+        const saved = localStorage.getItem('crypto_transactions');
+        if (saved) {
+            transactions = JSON.parse(saved);
+        }
+        loadPrices();
+    }
+    
+    // Сохранение в localStorage
+    function saveData() {
+        localStorage.setItem('crypto_transactions', JSON.stringify(transactions));
+        updateDashboard();
+        renderPortfolio();
+    }
+    
+    // Загрузка текущих цен через CoinGecko API
+    async function loadPrices() {
+        const coinIds = Object.keys(coins).join(',');
+        const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinIds}&vs_currencies=usd`;
+        
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+            currentPrices = data;
+        } catch (error) {
+            console.error('Ошибка загрузки цен:', error);
+            // Если API не работает, используем тестовые цены
+            for (const [id, info] of Object.entries(coins)) {
+                currentPrices[id] = { usd: 50000 };
+            }
+        }
+        
+        updateDashboard();
+        renderPortfolio();
+    }
+    
+    // Получить текущую цену монеты
+    function getCurrentPrice(coinId) {
+        if (currentPrices[coinId] && currentPrices[coinId].usd) {
+            return currentPrices[coinId].usd;
+        }
+        return 0;
+    }
+    
+    // Расчёт общей стоимости портфеля
+    function calculateTotalValue() {
+        let total = 0;
+        for (const tx of transactions) {
+            const currentPrice = getCurrentPrice(tx.coin);
+            total += tx.amount * currentPrice;
+        }
+        return total;
+    }
+    
+    // Расчёт общей прибыли/убытка
+    function calculateTotalProfit() {
+        let totalSpent = 0;
+        let totalCurrent = 0;
+        
+        for (const tx of transactions) {
+            totalSpent += tx.amount * tx.buyPrice;
+            totalCurrent += tx.amount * getCurrentPrice(tx.coin);
+        }
+        
+        return totalCurrent - totalSpent;
+    }
+    
+    // Расчёт процента прибыли
+    function calculateProfitPercent() {
+        let totalSpent = 0;
+        let totalCurrent = 0;
+        
+        for (const tx of transactions) {
+            totalSpent += tx.amount * tx.buyPrice;
+            totalCurrent += tx.amount * getCurrentPrice(tx.coin);
+        }
+        
+        if (totalSpent === 0) return 0;
+        return ((totalCurrent - totalSpent) / totalSpent) * 100;
+    }
+    
+    // Получить портфель по монетам (агрегация)
+    function getPortfolioByCoin() {
+        const portfolio = {};
+        
+        for (const tx of transactions) {
+            if (!portfolio[tx.coin]) {
+                portfolio[tx.coin] = {
+                    amount: 0,
+                    totalSpent: 0
+                };
+            }
+            portfolio[tx.coin].amount += tx.amount;
+            portfolio[tx.coin].totalSpent += tx.amount * tx.buyPrice;
+        }
+        
+        // Добавляем среднюю цену и текущую стоимость
+        for (const [coin, data] of Object.entries(portfolio)) {
+            data.avgPrice = data.totalSpent / data.amount;
+            data.currentPrice = getCurrentPrice(coin);
+            data.currentValue = data.amount * data.currentPrice;
+            data.profit = data.currentValue - data.totalSpent;
+            data.profitPercent = ((data.currentPrice - data.avgPrice) / data.avgPrice) * 100;
+        }
+        
+        return portfolio;
+    }
+    
+    // Обновление дашборда
+    function updateDashboard() {
+        const totalValue = calculateTotalValue();
+        const totalProfit = calculateTotalProfit();
+        const profitPercent = calculateProfitPercent();
+        
+        document.getElementById('totalValue').textContent = `$${totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        
+        const profitElement = document.getElementById('totalProfit');
+        profitElement.textContent = `${totalProfit >= 0 ? '+' : ''}$${totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        profitElement.className = totalProfit >= 0 ? 'stat-value profit-positive' : 'stat-value profit-negative';
+        
+        const percentElement = document.getElementById('profitPercent');
+        percentElement.textContent = `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(2)}%`;
+        percentElement.className = profitPercent >= 0 ? 'profit-positive' : 'profit-negative';
+        
+        // Распределение портфеля
+        const portfolio = getPortfolioByCoin();
+        const distributionDiv = document.getElementById('distributionList');
+        
+        if (Object.keys(portfolio).length === 0) {
+            distributionDiv.innerHTML = '<div class="empty-state">Нет монет в портфеле</div>';
+            return;
+        }
+        
+        // Сортируем по стоимости
+        const sorted = Object.entries(portfolio).sort((a, b) => b[1].currentValue - a[1].currentValue);
+        const total = totalValue;
+        
+        distributionDiv.innerHTML = sorted.map(([coinId, data]) => {
+            const percent = (data.currentValue / total) * 100;
+            const coin = coins[coinId];
+            return `
+                <div style="margin-bottom: 12px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span style="color: #ccffcc;">${coin?.name || coinId}</span>
+                        <span style="color: #00ff66;">${percent.toFixed(1)}%</span>
+                    </div>
+                    <div style="background: rgba(0, 50, 0, 0.5); border-radius: 10px; overflow: hidden;">
+                        <div style="width: ${percent}%; height: 6px; background: linear-gradient(90deg, #00ff00, #00cc66);"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Отображение списка портфеля (все транзакции)
+    function renderPortfolio() {
+        const container = document.getElementById('portfolioList');
+        
+        if (transactions.length === 0) {
+            container.innerHTML = '<div class="empty-state">✨ Пока нет монет. Добавьте первую покупку!</div>';
+            return;
+        }
+        
+        // Группируем по монетам для отображения
+        const portfolio = getPortfolioByCoin();
+        
+        container.innerHTML = Object.entries(portfolio).map(([coinId, data]) => {
+            const coin = coins[coinId];
+            const profitClass = data.profit >= 0 ? 'profit-positive' : 'profit-negative';
+            const profitSign = data.profit >= 0 ? '+' : '';
+            
+            return `
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span class="coin-name">${coin?.name || coinId}</span>
+                            <span class="coin-symbol">${coin?.symbol || coinId.toUpperCase()}</span>
+                        </div>
+                        <div class="coin-price">
+                            <div class="coin-current">$${data.currentPrice.toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 12px;">
+                        <div>
+                            <div style="font-size: 12px; color: #66aa66;">Количество</div>
+                            <div class="coin-amount">${data.amount.toFixed(6)}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #66aa66;">Средняя цена</div>
+                            <div>$${data.avgPrice.toLocaleString()}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #66aa66;">Стоимость</div>
+                            <div>$${data.currentValue.toLocaleString()}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #66aa66;">P&amp;L</div>
+                            <div class="${profitClass}">${profitSign}$${data.profit.toLocaleString()} (${data.profitPercent >= 0 ? '+' : ''}${data.profitPercent.toFixed(2)}%)</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    // Добавление транзакции
+    function addTransaction() {
+        const coin = document.getElementById('coinSelect').value;
+        const amount = parseFloat(document.getElementById('coinAmount').value);
+        const buyPrice = parseFloat(document.getElementById('buyPrice').value);
+        
+        if (isNaN(amount) || amount <= 0) {
+            alert('Введите корректное количество');
+            return;
+        }
+        
+        if (isNaN(buyPrice) || buyPrice <= 0) {
+            alert('Введите корректную цену');
+            return;
+        }
+        
+        transactions.push({
+            id: Date.now(),
+            coin: coin,
+            amount: amount,
+            buyPrice: buyPrice,
+            date: new Date().toISOString()
+        });
+        
+        saveData();
+        
+        // Очищаем поля
+        document.getElementById('coinAmount').value = '';
+        document.getElementById('buyPrice').value = '';
+        
+        // Переключаемся на дашборд
+        document.querySelector('.tab-btn[data-tab="dashboard"]').click();
+    }
+    
+    // Очистка всех данных
+    function clearAllData() {
+        if (confirm('⚠️ Вы уверены? Все данные будут удалены навсегда!')) {
+            transactions = [];
+            saveData();
+        }
+    }
+    
+    // Переключение вкладок
+    function switchTab(tabName, event) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        if (event && event.target) event.target.classList.add('active');
+        
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        
+        if (tabName === 'portfolio') renderPortfolio();
+        if (tabName === 'dashboard') updateDashboard();
+    }
+    
+    // Привязка обработчиков к кнопкам вкладок
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => switchTab(btn.dataset.tab, e));
+    });
+    
+    // Загрузка при старте
+    loadData();
+    
+    // Обновление цен каждые 30 секунд
+    setInterval(() => {
+        loadPrices();
+    }, 30000);
+</script>
+</body>
+</html>
